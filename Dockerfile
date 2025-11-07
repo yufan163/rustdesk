@@ -3,6 +3,8 @@ FROM debian:bullseye-slim
 WORKDIR /
 ARG DEBIAN_FRONTEND=noninteractive
 ENV VCPKG_FORCE_SYSTEM_BINARIES=1
+RUN sed -i "s|deb.debian.org|mirrors.aliyun.com|g" /etc/apt/sources.list && \
+    sed -i "s|security.debian.org|mirrors.aliyun.com|g" /etc/apt/sources.list
 RUN apt update -y && \
     apt install --yes --no-install-recommends \
         g++ \
@@ -58,6 +60,15 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh && \
     chmod +x rustup.sh && \
     ./rustup.sh -y
 
+RUN echo '[source.crates-io]' > ~/.cargo/config \
+ && echo 'registry = "https://github.com/rust-lang/crates.io-index"'  >> ~/.cargo/config \
+ && echo '# 替换成你偏好的镜像源'  >> ~/.cargo/config \
+ && echo "replace-with = 'sjtu'"  >> ~/.cargo/config \
+ && echo '# 上海交通大学'   >> ~/.cargo/config \
+ && echo '[source.sjtu]'   >> ~/.cargo/config \
+ && echo 'registry = "https://mirrors.sjtug.sjtu.edu.cn/git/crates.io-index"'  >> ~/.cargo/config \
+ && echo '' >> ~/.cargo/config
+     
 USER root
 ENV HOME=/home/user
 COPY ./entrypoint.sh /

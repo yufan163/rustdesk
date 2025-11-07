@@ -1,0 +1,74 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.5'
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: zulu
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-unknown-linux-gnu
+
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build pkg-config
+
+    - name: Initialize submodules
+      run: |
+        git submodule update --init --depth 1
+
+    - name: Build Android APK (Release)
+      run: |
+        cd flutter
+        flutter build apk --release --split-per-abi
+      env:
+        ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+
+    - name: Upload APK artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rustdesk-android-apk
+        path: flutter/build/app/outputs/flutter-apk/app-*.apk
+        retention-days: 30
+
+    - name: Upload AAB artifact
+      run: |
+        cd flutter
+        flutter build appbundle --release
+      env:
+        ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+
+    - name: Upload AAB artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rustdesk-android-aab
+        path: flutter/build/app/outputs/bundle/release/app-release.aab
+        retention-days: 30
