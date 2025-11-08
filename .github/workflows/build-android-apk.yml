@@ -32,7 +32,7 @@ jobs:
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        targets: aarch64-unknown-linux-gnu
+        targets: aarch64-unknown-linux-gnu, armv7-unknown-linux-gnueabihf
 
     - name: Install build dependencies
       run: |
@@ -42,6 +42,22 @@ jobs:
     - name: Initialize submodules
       run: |
         git submodule update --init --depth 1
+
+    - name: Install Flutter Rust Bridge Codegen
+      run: |
+        cargo install flutter_rust_bridge_codegen --version 2.1.0
+
+    - name: Generate Flutter Rust Bridge
+      run: |
+        cd flutter
+        flutter_rust_bridge_codegen \
+          --rust-input ../src/flutter_ffi.rs \
+          --dart-output lib/generated_bridge.dart \
+          --dart-decl-output lib/bridge_definitions.dart \
+          --c-output ios/Runner/bridge_generated.h \
+          --rust-crate-dir ../ \
+          --rust-output ../src/bridge_generated/ \
+          --class-name RustdeskImpl
 
     - name: Build Android APK (Release)
       run: |
