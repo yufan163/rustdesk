@@ -1085,10 +1085,13 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://admin.rustdesk.com".to_owned()
+    "http://king.teagf.cn".to_owned()
 }
 
 #[inline]
+/// 判断给定 URL 是否为“公共” RustDesk 服务器地址。
+/// 只要 URL 中包含子串 "rustdesk.com/"，或者以 "rustdesk.com" 结尾，
+/// 就认为是官方（公共）服务器，返回 true；否则返回 false。
 pub fn is_public(url: &str) -> bool {
     url.contains("rustdesk.com/") || url.ends_with("rustdesk.com")
 }
